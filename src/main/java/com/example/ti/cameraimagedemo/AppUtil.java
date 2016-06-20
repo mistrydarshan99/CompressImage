@@ -475,7 +475,7 @@ public class AppUtil {
 
     }
 
-    public static   String setBitmapToFile (Bitmap bitmap)
+    public static   String setBitmapToFile (Bitmap bitmap, int qlty)
     {
         FileOutputStream out = null;
         String filename = getFilename();
@@ -483,7 +483,7 @@ public class AppUtil {
             out = new FileOutputStream(filename);
 
 //          write the compressed bitmap at the destination specified by filename.
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, qlty, out);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -181,6 +181,20 @@ public class ImagePicker {
         return bm;
     }
 
+    public static Bitmap getBitmap(Context context, Uri selectedImage)
+    {
+//        Bitmap bm = null;
+//        bm = decodeBitmap(context, selectedImage,0);
+        Bitmap bm = null;
+        try {
+            bm = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(selectedImage));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return bm;
+    }
+
 
     private static int getRotation(Context context, Uri imageUri, boolean isCamera) {
         int rotation;

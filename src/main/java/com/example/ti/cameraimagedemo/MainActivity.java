@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -23,6 +25,8 @@ public class MainActivity extends Activity {
     ImageBean imageBean;
 
     TextView txtMain, txtNew;
+    DiscreteSeekBar skqlty;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +36,14 @@ public class MainActivity extends Activity {
         imageViewNew = (ImageView) findViewById(R.id.img2);
         txtMain = (TextView) findViewById(R.id.txtMain);
         txtNew = (TextView) findViewById(R.id.txtNew);
+        skqlty = (DiscreteSeekBar) findViewById(R.id.edQlty);
+
+//        skqlty.setNumericTransformer(new DiscreteSeekBar.NumericTransformer() {
+//            @Override
+//            public int transform(int value) {
+//                return value;
+//            }
+//        });
 
         imageViewMain.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,8 +57,16 @@ public class MainActivity extends Activity {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Track -1
                 Bitmap bm = ImagePicker.getImageResized(MainActivity.this, imageBean.getImageUri());
                 String filePath = AppUtil.setBitmapToFile(bm, 100);
+
+
+                // Track -2
+//                Bitmap bm = ImagePicker.getBitmap(MainActivity.this, imageBean.getImageUri());
+//                String filePath = AppUtil.setBitmapToFile(bm, skqlty.getProgress());
+
+
                 File newfile = new File(filePath);
                 Log.e(TAG, "onClick: old size " + imageBean.getImageLength() + " new size  :: " + newfile.length());
                 Glide.with(MainActivity.this)
@@ -82,4 +102,6 @@ public class MainActivity extends Activity {
             }
         }
     }
+
+
 }
