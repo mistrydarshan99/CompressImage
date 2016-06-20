@@ -475,6 +475,23 @@ public class AppUtil {
 
     }
 
+    public static   String setBitmapToFile (Bitmap bitmap)
+    {
+        FileOutputStream out = null;
+        String filename = getFilename();
+        try {
+            out = new FileOutputStream(filename);
+
+//          write the compressed bitmap at the destination specified by filename.
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return filename;
+    }
+
     private static  String getFilename() {
         File file = new File(Environment.getExternalStorageDirectory().getPath(), "SiliCompressor/Images");
         if (!file.exists()) {

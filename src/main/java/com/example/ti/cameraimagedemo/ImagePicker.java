@@ -13,6 +13,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -69,54 +70,62 @@ public class ImagePicker {
     }
 
 
-    public static Uri getImageFromResult(Context context, int resultCode,
-                                            Intent imageReturnedIntent) throws IOException {
+    public static ImageBean getImageFromResult(Context context, int resultCode,
+                                               Intent imageReturnedIntent) throws IOException {
         Log.d(TAG, "getImageFromResult, resultCode: " + resultCode);
         Bitmap bm = null;
         File imageFile = getTempFile(context);
         Uri selectedImage = null;
+        String imageSize = null;
         if (resultCode == Activity.RESULT_OK) {
 
             boolean isCamera = (imageReturnedIntent == null ||
-                    imageReturnedIntent.getData() == null  ||
+                    imageReturnedIntent.getData() == null ||
                     imageReturnedIntent.getData().equals(Uri.fromFile(imageFile)));
             if (isCamera) {     /** CAMERA **/
                 selectedImage = Uri.fromFile(imageFile);
+                imageSize = ""+ imageFile.length();
 
             } else {            /** ALBUM **/
                 selectedImage = imageReturnedIntent.getData();
+                Cursor returnCursor =
+                        context.getContentResolver().query(selectedImage, null, null, null, null);
+
+                int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+                returnCursor.moveToFirst();
+                imageSize = "" + Long.toString(returnCursor.getLong(sizeIndex));
             }
             Log.d(TAG, "selectedImage: " + selectedImage);
-
-            bm = getImageResized(context, selectedImage);
-            int rotation = getRotation(context, selectedImage, isCamera);
-            bm = rotate(bm, rotation);
-
-            File savedFile = saveBitmap(bm, context);
-            selectedImage=  Uri.fromFile(savedFile);
-
         }
-        return selectedImage;
+
+        ImageBean imageBean = new ImageBean("Temp", selectedImage, imageSize);
+//
+//        Log.e("Size" ,"--------------------------------------------------"+ Long.toString(returnCursor.getLong(sizeIndex)));
+
+        return imageBean;
 //        return bm;
     }
+
+
     public static File getImageFileFromResult(Context context, int resultCode,
-                                            Intent imageReturnedIntent) {
+                                              Intent imageReturnedIntent) {
         Log.d(TAG, "getImageFromResult, resultCode: " + resultCode);
         File imageFile = getTempFile(context);
-        boolean isCamera=false;
+        boolean isCamera = false;
         Uri selectedImage = null;
         if (resultCode == Activity.RESULT_OK) {
-             isCamera = (imageReturnedIntent == null ||
-                    imageReturnedIntent.getData() == null  ||
+            isCamera = (imageReturnedIntent == null ||
+                    imageReturnedIntent.getData() == null ||
                     imageReturnedIntent.getData().equals(Uri.fromFile(imageFile)));
             if (isCamera) {     /** CAMERA **/
                 selectedImage = Uri.fromFile(imageFile);
             } else {            /** ALBUM **/
                 selectedImage = imageReturnedIntent.getData();
             }
-            Log.d(TAG, "selectedImage: " + selectedImage);
+            Log.d(TAG, "selectedImage: " + selectedImage + " :: " + imageFile.length());
         }
-        if(isCamera)
+        if (isCamera)
             return imageFile;
         else {
             assert selectedImage != null;
@@ -126,16 +135,13 @@ public class ImagePicker {
 
 
     private static File getTempFile(Context context) {
-        File dir=context.getExternalCacheDir();
-        if(dir!=null)
-        {
+        File dir = context.getExternalCacheDir();
+        if (dir != null) {
             File imageFile = new File(dir, TEMP_IMAGE_NAME);
             imageFile.getParentFile().mkdirs();
             return imageFile;
-        }
-        else
-        {
-            Toast.makeText(context,"alert_low_memory", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(context, "alert_low_memory", Toast.LENGTH_LONG).show();
             return new File("");
         }
     }
@@ -163,7 +169,7 @@ public class ImagePicker {
     /**
      * Resize to avoid using too much memory loading big images (e.g.: 2560*1920)
      **/
-    private static Bitmap getImageResized(Context context, Uri selectedImage) {
+    public static Bitmap getImageResized(Context context, Uri selectedImage) {
         Bitmap bm = null;
         int[] sampleSizes = new int[]{5, 3, 2, 1};
         int i = 0;
